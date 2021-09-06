@@ -11,7 +11,6 @@ import { useTokensContext } from "../../Web3/Erc20Context"
 import { Redirect, useLocation } from "react-router-dom"
 import { useQuery } from "../../utils/useQuery"
 import { useWeb3React } from "@web3-react/core"
-import { BigNumber } from "@ethersproject/bignumber"
 import { ethers } from "ethers"
 
 const useStyles = makeStyles(
@@ -70,16 +69,20 @@ export default function Transfer() {
             let all =
                 Object.keys(tokens)
 
-            all.map((addr, index) => {
+            let tkn = all.find((addr, index) => {
                 if (
                     tokens[addr]
                         .name === token
                 ) {
-                    setSelectedToken(
-                        tokens[addr]
-                    )
+                    return true
                 }
-            })
+            });
+
+            if (tkn) {
+                setSelectedToken(tokens[tkn]);
+            } else {
+                setSelectedToken(tokens[all[0]])
+            }
         }
     }, [active, tokens])
 
@@ -141,7 +144,11 @@ export default function Transfer() {
                             ).then(res => {
                                 setEthScanLink(`https://ropsten.etherscan.io/tx/${res.hash}`);
                                 setDisableSend(false);
-                                console.log(res);
+                                res.wait().then((value) => {
+                                    if (selectedToken.updateNativeBalance) {
+                                        selectedToken.updateNativeBalance();
+                                    }
+                                })
                             }).catch(err => {
                                 setDisableSend(false);
                                 console.log(`${err.message}`)
@@ -151,6 +158,8 @@ export default function Transfer() {
                     className={
                         classes.myBtn
                     }
+                    variant="contained"
+                    color="primary"
                     disabled={
                         disableSend
                     }

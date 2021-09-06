@@ -91,12 +91,12 @@ const ERC20ContextProvider = ({
 
         if (connector && account && networkTokens.length > 0) {
             networkTokens.forEach(async (token) => {
-                const signer = await connector.getProvider();
+                const provider = await connector.getProvider();
                 if (token.symbol !== "ETH") {
 
                     const tokenContract = Erc20DetailedFactory.connect(
                         token.address,
-                        new Web3Provider(signer).getSigner()
+                        new Web3Provider(provider).getSigner()
                     );
 
                     const newTokenInfo: TokenInfo = {
@@ -189,17 +189,33 @@ const ERC20ContextProvider = ({
                     );
                     tokenContracts.push(tokenContract);
                 } else {
+                    const signer = new Web3Provider(provider).getSigner();
+                    
+                    let updateNativeBalance = () => {
+                        signer.getBalance().then(bnBalance => {
+                            if (token.name) {
+                                tokensDispatch({
+                                    type: "updateTokenBalanceAllowance",
+                                    payload: {
+                                        id: token.name,
+                                        spenderAllowance: 0,
+                                        balance: +bnBalance / 1e18,
+                                        balanceBN: new BN(bnBalance.toString()),
+                                    },
+                                });
+                            }
+                        })
+                    }
+                    
                     let transfer = (spender: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction> => {
-                        const provider = new Web3Provider(signer);
-
                         const tx = {
                             from: account,
                             to: spender,
                             value: amount,
-                            nonce: provider.getTransactionCount(account, "latest")
+                            nonce: signer.getTransactionCount()
                         }
                         return new Promise((res, rej) => {
-                            provider.getSigner().sendTransaction(tx).then((val) => {
+                            signer.sendTransaction(tx).then((val) => {
                                 res(val)
                             })
                         })
@@ -216,14 +232,20 @@ const ERC20ContextProvider = ({
                         allowance: undefined,
                         approve: undefined,
                         transfer: transfer,
-                        isNativeToken: true
+                        isNativeToken: true,
+                        updateNativeBalance
                     };
-                    
+
                     tokensDispatch({
                         type: "addToken",
                         payload: { id: token.address, token: newTokenInfo },
                     });
 
+                    setTimeout(() => {
+                        if (newTokenInfo.updateNativeBalance) {
+                            newTokenInfo.updateNativeBalance();
+                        }
+                    }, 0)
                 }
             });
         }

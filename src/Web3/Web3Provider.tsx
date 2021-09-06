@@ -4,8 +4,8 @@ import { ethers } from 'ethers'
 
 const ETHERS_POLLING_INTERVAL = 1000
 
-const getLibrary = (provider: any) => {
-  const library = new ethers.providers.Web3Provider(window.ethereum)
+const getLibrary = (provider: any): any => {
+  const library = new ethers.providers.Web3Provider(provider)
   library.pollingInterval = ETHERS_POLLING_INTERVAL
   return library
 }

@@ -35,6 +35,8 @@ export type TokenInfo = {
         spender: string,
         overrides?: CallOverrides
     ) => Promise<BigNumber>;
+
+    updateNativeBalance?: () => void
 };
 
 export type Tokens = {

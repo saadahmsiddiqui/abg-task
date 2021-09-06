@@ -47,11 +47,11 @@ export default function Header() {
           <Typography variant="h6" className={classes.title}>
             deFi App
           </Typography>
-          { !account ? <Button  onClick={() => activateWeb3()} color="inherit">Connect Wallet</Button> : 
+          { !account ? <Button variant="contained" onClick={() => activateWeb3()} color="inherit">Connect Wallet</Button> : 
             shortenAddr(account)
           }
           <br />
-          { selectedToken ? `${selectedToken.balance} ${selectedToken.symbol}` : null }
+          { selectedToken ? `${selectedToken.balance.toFixed(4)} ${selectedToken.symbol}` : null }
         </Toolbar>
       </AppBar>
     </div>
