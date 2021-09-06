@@ -1,23 +1,28 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Web3Provider from './Web3/Web3Provider';
+import Header from './components/Header/Header';
+import { ERC20ContextProvider } from './Web3/Erc20Context';
+import Transfer from './components/Transfer/Transfer';
 
-function App() {
+const App = () => {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <Web3Provider>
+            <ERC20ContextProvider tokensToWatch={{
+              [3]: [
+                {
+                  name: "DAI",
+                  address: "0xad6d458402f60fd3bd25163575031acdce07538d",
+                  symbol: "DAI",
+                  imageUri: ""
+                }
+              ]
+            }}>
+              <Header></Header>
+              <Transfer></Transfer>
+            </ERC20ContextProvider>
+        </Web3Provider>
       </header>
     </div>
   );
