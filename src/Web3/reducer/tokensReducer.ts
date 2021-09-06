@@ -16,12 +16,13 @@ export type TokenInfo = {
     balanceBN: BN;
     imageUri?: string;
     spenderAllowance?: number;
+    isNativeToken?: boolean;
 
     approve?: (
         spender: string,
         amount: BigNumberish,
         overrides?: Overrides
-    ) => Promise<ContractTransaction> | undefined;
+    ) => Promise<ContractTransaction>;
 
     transfer?: (
         recipient: string,
@@ -33,7 +34,7 @@ export type TokenInfo = {
         owner: string,
         spender: string,
         overrides?: CallOverrides
-    ) => Promise<BigNumber> | undefined;
+    ) => Promise<BigNumber>;
 };
 
 export type Tokens = {

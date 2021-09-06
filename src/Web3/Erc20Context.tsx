@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { TokenInfo, tokensReducer } from "./reducer/tokensReducer";
 import { BigNumber as BN } from "bignumber.js";
 import { Erc20DetailedFactory } from "../interfaces/ERC20DetailedFactory";
@@ -27,6 +27,8 @@ type TokensToWatch = {
 
 type Web3Context = {
     tokens: { [address: string]: TokenInfo };
+    selectedToken: TokenInfo | null;
+    setSelectedToken: (token: TokenInfo) => void
 };
 
 const erc20Context = React.createContext<Web3Context | undefined>(
@@ -44,6 +46,7 @@ const ERC20ContextProvider = ({
 }) => {
     const { connector, account, chainId } = useWeb3React()
     const [tokens, tokensDispatch] = useReducer(tokensReducer, {});
+    const [selectedToken, setSelectedToken] = useState<TokenInfo | null>(null);
 
     function resetEth() {
         tokensDispatch({ type: "resetTokens" });
@@ -93,7 +96,7 @@ const ERC20ContextProvider = ({
 
                     const tokenContract = Erc20DetailedFactory.connect(
                         token.address,
-                        new Web3Provider(signer)
+                        new Web3Provider(signer).getSigner()
                     );
 
                     const newTokenInfo: TokenInfo = {
@@ -188,6 +191,7 @@ const ERC20ContextProvider = ({
                 } else {
                     let transfer = (spender: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction> => {
                         const provider = new Web3Provider(signer);
+
                         const tx = {
                             from: account,
                             to: spender,
@@ -195,10 +199,8 @@ const ERC20ContextProvider = ({
                             nonce: provider.getTransactionCount(account, "latest")
                         }
                         return new Promise((res, rej) => {
-                            provider.getSigner().signTransaction(tx).then((signature) => {
-                                provider.sendTransaction(signature).then((value) => {
-                                    res(value)
-                                })
+                            provider.getSigner().sendTransaction(tx).then((val) => {
+                                res(val)
                             })
                         })
                     }
@@ -213,7 +215,8 @@ const ERC20ContextProvider = ({
                         spenderAllowance: 0,
                         allowance: undefined,
                         approve: undefined,
-                        transfer: transfer
+                        transfer: transfer,
+                        isNativeToken: true
                     };
                     
                     tokensDispatch({
@@ -240,6 +243,8 @@ const ERC20ContextProvider = ({
         <erc20Context.Provider
             value={{
                 tokens,
+                selectedToken,
+                setSelectedToken
             }}
         >
             {children}

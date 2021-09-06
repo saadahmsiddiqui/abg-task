@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import { useWeb3React } from '@web3-react/core';
 import { injected } from '../../Web3/connector';
+import { useTokensContext } from '../../Web3/Erc20Context';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -27,6 +28,7 @@ export default function Header() {
   const classes = useStyles();
 
   const { activate, account } = useWeb3React()
+  const { selectedToken } = useTokensContext();
 
   const onError = (err: any) => {
     console.error(err)
@@ -34,7 +36,7 @@ export default function Header() {
   
   const activateWeb3 = () => {
     activate(injected, onError, true).catch(err => {
-      console.error(err)
+      alert(err.message)
     })
   }
 
@@ -48,7 +50,8 @@ export default function Header() {
           { !account ? <Button  onClick={() => activateWeb3()} color="inherit">Connect Wallet</Button> : 
             shortenAddr(account)
           }
-          
+          <br />
+          { selectedToken ? `${selectedToken.balance} ${selectedToken.symbol}` : null }
         </Toolbar>
       </AppBar>
     </div>

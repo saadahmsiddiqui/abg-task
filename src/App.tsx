@@ -3,6 +3,7 @@ import Web3Provider from "./Web3/Web3Provider"
 import Header from "./components/Header/Header"
 import { ERC20ContextProvider } from "./Web3/Erc20Context"
 import Transfer from "./components/Transfer/Transfer"
+import { BrowserRouter as Router } from "react-router-dom"
 // import {
 //     BrowserRouter as Router,
 //   } from "react-router-dom";
@@ -28,19 +29,23 @@ const App = () => {
                             symbol: "ETH",
                             imageUri:
                                 "",
+                        },
+                        {
+                            name: "TST",
+                            address: "0x722dd3F80BAC40c951b51BdD28Dd19d435762180",
+                            symbol: "TST",
+                            imageUri: ""
                         }
                     ],
                 }}
             >
-                <div className="App">
-                    {/* <Router> */}
-                        <Header></Header>
+                {/* <Router> */}
 
-                        <div>
-                            <Transfer></Transfer>
-                        </div>
-                    {/* </Router> */}
-                </div>
+                <Router>
+                    <Header></Header>
+                    <Transfer></Transfer>
+                </Router>
+                {/* </Router> */}
             </ERC20ContextProvider>
         </Web3Provider>
     )
