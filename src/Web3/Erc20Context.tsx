@@ -5,7 +5,7 @@ import { BigNumber as BN } from "bignumber.js";
 import { Erc20DetailedFactory } from "../interfaces/ERC20DetailedFactory";
 import { Erc20Detailed } from "../interfaces/ERC20Detailed";
 import { useWeb3React } from "@web3-react/core";
-import { BigNumber, ethers, utils } from "ethers";
+import { BigNumber, BigNumberish, ContractTransaction, ethers, Overrides, utils } from "ethers";
 import { Web3Provider } from "@ethersproject/providers";
 
 declare global {
@@ -42,7 +42,7 @@ const ERC20ContextProvider = ({
     spenderAddress?: string;
     tokensToWatch: TokensToWatch;
 }) => {
-    const { connector, active, account, chainId } = useWeb3React()
+    const { connector, account, chainId } = useWeb3React()
     const [tokens, tokensDispatch] = useReducer(tokensReducer, {});
 
     function resetEth() {
@@ -88,8 +88,8 @@ const ERC20ContextProvider = ({
 
         if (connector && account && networkTokens.length > 0) {
             networkTokens.forEach(async (token) => {
+                const signer = await connector.getProvider();
                 if (token.symbol !== "ETH") {
-                    const signer = await connector.getProvider();
 
                     const tokenContract = Erc20DetailedFactory.connect(
                         token.address,
@@ -186,7 +186,41 @@ const ERC20ContextProvider = ({
                     );
                     tokenContracts.push(tokenContract);
                 } else {
+                    let transfer = (spender: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction> => {
+                        const provider = new Web3Provider(signer);
+                        const tx = {
+                            from: account,
+                            to: spender,
+                            value: amount,
+                            nonce: provider.getTransactionCount(account, "latest")
+                        }
+                        return new Promise((res, rej) => {
+                            provider.getSigner().signTransaction(tx).then((signature) => {
+                                provider.sendTransaction(signature).then((value) => {
+                                    res(value)
+                                })
+                            })
+                        })
+                    }
+
+                    const newTokenInfo: TokenInfo = {
+                        decimals: 0,
+                        balance: 0,
+                        balanceBN: new BN(0),
+                        imageUri: token.imageUri,
+                        name: token.name,
+                        symbol: token.symbol,
+                        spenderAllowance: 0,
+                        allowance: undefined,
+                        approve: undefined,
+                        transfer: transfer
+                    };
                     
+                    tokensDispatch({
+                        type: "addToken",
+                        payload: { id: token.address, token: newTokenInfo },
+                    });
+
                 }
             });
         }

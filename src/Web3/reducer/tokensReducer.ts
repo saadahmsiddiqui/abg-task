@@ -21,7 +21,7 @@ export type TokenInfo = {
         spender: string,
         amount: BigNumberish,
         overrides?: Overrides
-    ) => Promise<ContractTransaction>;
+    ) => Promise<ContractTransaction> | undefined;
 
     transfer?: (
         recipient: string,
@@ -33,7 +33,7 @@ export type TokenInfo = {
         owner: string,
         spender: string,
         overrides?: CallOverrides
-    ) => Promise<BigNumber>;
+    ) => Promise<BigNumber> | undefined;
 };
 
 export type Tokens = {
