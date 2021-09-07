@@ -1,6 +1,7 @@
 # Advanced Blockchain Assesment
 
 Couple of assumptions or short comings from my side: 
+* used alerts to show incorrect chain error
 * I have made ETH (native token) transfer flexible in form of ERC20 but i am differentiating it on the basis of its symbol provided in tokens.ts
 * All ERC20s should be listed along with network id in the format given in tokens.tsx
 * I didnt do a lot of design work due to my hectic schedule
