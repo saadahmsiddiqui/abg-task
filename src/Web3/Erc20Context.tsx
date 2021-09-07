@@ -193,11 +193,11 @@ const ERC20ContextProvider = ({
                     
                     let updateNativeBalance = () => {
                         signer.getBalance().then(bnBalance => {
-                            if (token.name) {
+                            if (token.symbol) {
                                 tokensDispatch({
                                     type: "updateTokenBalanceAllowance",
                                     payload: {
-                                        id: token.name,
+                                        id: token.symbol,
                                         spenderAllowance: 0,
                                         balance: +bnBalance / 1e18,
                                         balanceBN: new BN(bnBalance.toString()),

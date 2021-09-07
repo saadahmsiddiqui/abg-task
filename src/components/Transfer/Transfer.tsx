@@ -92,11 +92,13 @@ export default function Transfer() {
                 setIsWaitingOnTransaction(
                     true
                 )
+                let defaultDecimals = 18;
+                if (selectedToken.decimals) defaultDecimals = selectedToken.decimals
                 selectedToken
                     .transfer(
                         values.recipient,
                         ethers.utils.parseEther(
-                            values.amount
+                            (+values.amount).toFixed(defaultDecimals)
                         )
                     )
                     .then((res) => {

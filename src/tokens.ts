@@ -9,18 +9,12 @@ export default {
                 "",
         },
         {
-            name: "ETH",
+            name: "Ethereum",
             address:
                 "ETH",
             symbol: "ETH",
             imageUri:
                 "",
-        },
-        {
-            name: "TST",
-            address: "0x722dd3F80BAC40c951b51BdD28Dd19d435762180",
-            symbol: "TST",
-            imageUri: ""
         }
     ],
 }
