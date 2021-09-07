@@ -5,13 +5,16 @@ import {
 import { makeStyles } from "@material-ui/styles"
 import {
     useEffect,
+    useReducer,
     useState,
 } from "react"
 import { useTokensContext } from "../../Web3/Erc20Context"
-import { Redirect, useLocation } from "react-router-dom"
+import { Redirect } from "react-router-dom"
 import { useQuery } from "../../utils/useQuery"
 import { useWeb3React } from "@web3-react/core"
 import { ethers } from "ethers"
+import TextField from "@material-ui/core/TextField"
+import { transferFormReducer } from "./transferFormReducer"
 
 const useStyles = makeStyles(
     (theme) => ({
@@ -31,6 +34,7 @@ const useStyles = makeStyles(
         },
         myBtn: {
             display: "block",
+            marginBottom: "16px",
         },
         btnBox: {
             display: "flex",
@@ -40,8 +44,7 @@ const useStyles = makeStyles(
 )
 
 export default function Transfer() {
-    const token =
-        useQuery().get("token");
+    let token = useQuery().get("token")
 
     const classes = useStyles()
     const { active } = useWeb3React()
@@ -59,118 +62,270 @@ export default function Transfer() {
         ethScanLink,
         setEthScanLink,
     ] = useState<string | null>(null)
-    const [recipient, setRecipient] =
-        useState("")
-    const [amount, setAmount] =
-        useState("")
+    const [
+        transferForm,
+        dispatchTransferFormEvent,
+    ] = useReducer(
+        transferFormReducer,
+        {
+            amount: "",
+            recipient: "",
+            error: {},
+        }
+    )
 
     useEffect(() => {
         if (active && tokens) {
             let all =
                 Object.keys(tokens)
 
-            let tkn = all.find((addr, index) => {
-                if (
-                    tokens[addr]
-                        .name === token
-                ) {
-                    return true
+            let tkn = all.find(
+                (addr, index) => {
+                    if (
+                        tokens[addr]
+                            .name ===
+                        token
+                    ) {
+                        return true
+                    }
                 }
-            });
+            )
 
             if (tkn) {
-                setSelectedToken(tokens[tkn]);
+                setSelectedToken(
+                    tokens[tkn]
+                )
             } else {
-                setSelectedToken(tokens[all[0]])
+                setSelectedToken(
+                    tokens[all[0]]
+                )
             }
         }
     }, [active, tokens])
 
-    return (
-        token ? <div className={classes.root}>
-        <div
-            className={
-                classes.inputBox
-            }
-        >
-            <Input
-                value={amount}
-                onChange={(evt) =>
-                    setAmount(
-                        evt.target
-                            .value
-                    )
-                }
-                placeholder={
-                    "Enter Amount"
-                }
-                className={
-                    classes.input
-                }
-            />
-            <Input
-                placeholder={
-                    "Enter Recipient Address"
-                }
-                value={recipient}
-                className={
-                    classes.input
-                }
-                onChange={
-                    evt => {
-                            setRecipient(evt.target.value)
-                        }
-                }
-            />
-            {/* validator /^0x[a-fA-F0-9]{40}$/ */}
-
+    return token ? (
+        <div className={classes.root}>
             <div
                 className={
-                    classes.btnBox
+                    classes.inputBox
                 }
             >
-                <Button
-                    onClick={(
-                        evt
-                    ) => {
-                        if (
-                            selectedToken &&
-                            selectedToken.transfer
-                        ) {
-                            setDisableSend(true);
-                            selectedToken.transfer(
-                                recipient,
-                                ethers.utils.parseEther(amount)
-                            ).then(res => {
-                                setEthScanLink(`https://ropsten.etherscan.io/tx/${res.hash}`);
-                                setDisableSend(false);
-                                res.wait().then((value) => {
-                                    if (selectedToken.updateNativeBalance) {
-                                        selectedToken.updateNativeBalance();
-                                    }
-                                })
-                            }).catch(err => {
-                                setDisableSend(false);
-                                console.log(`${err.message}`)
-                            })
-                        }
-                    }}
-                    className={
-                        classes.myBtn
+                <TextField
+                    helperText={
+                        transferForm
+                            .error
+                            .amount
                     }
-                    variant="contained"
-                    color="primary"
-                    disabled={
-                        disableSend
+                    onBlur={(evt) =>
+                        dispatchTransferFormEvent(
+                            {
+                                type: "VALIDATE",
+                                payload: { balance: selectedToken?.balance }
+                            }
+                        )
+                    }
+                    error={
+                        transferForm
+                            .error
+                            .amount
+                            ? true
+                            : false
+                    }
+                    label={`Enter ${
+                        selectedToken
+                            ? selectedToken.symbol
+                            : ""
+                    } amount`}
+                    value={
+                        transferForm.amount
+                    }
+                    onChange={(evt) =>
+                        dispatchTransferFormEvent(
+                            {
+                                type: "ON_FIELD_UPDATE",
+                                payload:
+                                    {
+                                        amount: evt
+                                            .target
+                                            .value,
+                                    },
+                            }
+                        )
+                    }
+                    placeholder={
+                        "Enter Amount"
+                    }
+                    className={
+                        classes.input
+                    }
+                    variant="filled"
+                />
+                <small>
+                    Balance:{" "}
+                    {selectedToken
+                        ? selectedToken.balance.toFixed(
+                              4
+                          )
+                        : 0}
+                </small>
+                <TextField
+                    helperText={
+                        transferForm
+                            .error
+                            .recipient
+                    }
+                    error={
+                        transferForm
+                            .error
+                            .recipient
+                            ? true
+                            : false
+                    }
+                    onBlur={(evt) =>
+                        dispatchTransferFormEvent(
+                            {
+                                type: "VALIDATE",
+                                payload: { balance: selectedToken?.balance }
+                            }
+                        )
+                    }
+                    label={`Enter Recipient Address`}
+                    value={
+                        transferForm.recipient
+                    }
+                    className={
+                        classes.input
+                    }
+                    onChange={(evt) => {
+                        dispatchTransferFormEvent(
+                            {
+                                type: "ON_FIELD_UPDATE",
+                                payload:
+                                    {
+                                        recipient:
+                                            evt
+                                                .target
+                                                .value,
+                                    },
+                            }
+                        )
+                    }}
+                    variant="filled"
+                />
+
+                <div
+                    className={
+                        classes.btnBox
                     }
                 >
-                    Send
-                </Button>
-                {
-                    ethScanLink ? <Button target="_blank" className={classes.myBtn} href={ethScanLink} >View on Etherscan</Button> : null
-                }
+                    <Button
+                        onClick={(
+                            evt
+                        ) => {
+                            if (
+                                selectedToken &&
+                                selectedToken.transfer
+                            ) {
+                                setDisableSend(
+                                    true
+                                )
+                                selectedToken
+                                    .transfer(
+                                        transferForm.recipient,
+                                        ethers.utils.parseEther(
+                                            transferForm.amount
+                                        )
+                                    )
+                                    .then(
+                                        (
+                                            res
+                                        ) => {
+                                            setEthScanLink(
+                                                `https://ropsten.etherscan.io/tx/${res.hash}`
+                                            )
+                                            res.wait().then(
+                                                (
+                                                    value
+                                                ) => {
+                                                    dispatchTransferFormEvent(
+                                                        {
+                                                            type: "ON_FIELD_UPDATE",
+                                                            payload:
+                                                                {
+                                                                    recipient:
+                                                                        "",
+                                                                    amount: "",
+                                                                },
+                                                        }
+                                                    )
+                                                    setEthScanLink(
+                                                        null
+                                                    )
+                                                    setDisableSend(
+                                                        false
+                                                    )
+                                                    if (
+                                                        selectedToken.updateNativeBalance
+                                                    ) {
+                                                        selectedToken.updateNativeBalance()
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    )
+                                    .catch(
+                                        (
+                                            err
+                                        ) => {
+                                            setDisableSend(
+                                                false
+                                            )
+                                            console.log(
+                                                `${err.message}`
+                                            )
+                                        }
+                                    )
+                            }
+                        }}
+                        className={
+                            classes.myBtn
+                        }
+                        variant="contained"
+                        color="primary"
+                        disabled={
+                            disableSend ||
+                            transferForm
+                                .error
+                                .amount !==
+                                undefined ||
+                            transferForm
+                                .error
+                                .recipient !==
+                                undefined
+                        }
+                    >
+                        Send
+                    </Button>
+                    {ethScanLink ? (
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            target="_blank"
+                            className={
+                                classes.myBtn
+                            }
+                            href={
+                                ethScanLink
+                            }
+                        >
+                            View on
+                            Etherscan
+                        </Button>
+                    ) : null}
+                </div>
             </div>
         </div>
-    </div> : <Redirect to="/?token=ETH" />
+    ) : (
+        <Redirect to="/?token=ETH" />
     )
 }
