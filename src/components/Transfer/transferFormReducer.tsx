@@ -22,21 +22,14 @@ export function transferFormReducer(transferFormState: TransferForm, action: {
 }): TransferForm {
     switch(action.type) {
         case "ON_FIELD_UPDATE":
+            let t = { error: {}, amount: transferFormState.amount, recipient: transferFormState.recipient }
             if (action.payload.amount !== undefined) {
-                return {
-                    ...transferFormState,
-                    error: {},
-                    amount: action.payload.amount
-                }
+                t.amount = action.payload.amount
             }
             if (action.payload.recipient !== undefined) {
-                return {
-                    ...transferFormState,
-                    error: {},
-                    recipient: action.payload.recipient
-                }
+                t.recipient = action.payload.recipient
             }
-            return transferFormState;
+            return t;
         case "VALIDATE":
             let fError: FormError = {};
             if (!validator.isNumeric(transferFormState.amount))

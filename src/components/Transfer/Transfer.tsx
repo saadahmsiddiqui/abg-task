@@ -55,8 +55,8 @@ export default function Transfer() {
     } = useTokensContext()
 
     const [
-        disableSend,
-        setDisableSend,
+        isWaitingOnTransaction,
+        setIsWaitingOnTransaction
     ] = useState(false)
     const [
         ethScanLink,
@@ -102,6 +102,20 @@ export default function Transfer() {
             }
         }
     }, [active, tokens])
+
+    const isSendDisabled = () => {
+        return isWaitingOnTransaction ||
+        transferForm
+            .error
+            .amount !==
+            undefined ||
+        transferForm
+            .error
+            .recipient !==
+            undefined ||
+        !transferForm.amount.length ||
+        !transferForm.recipient.length
+    }
 
     return token ? (
         <div className={classes.root}>
@@ -226,7 +240,7 @@ export default function Transfer() {
                                 selectedToken &&
                                 selectedToken.transfer
                             ) {
-                                setDisableSend(
+                                setIsWaitingOnTransaction(
                                     true
                                 )
                                 selectedToken
@@ -261,7 +275,7 @@ export default function Transfer() {
                                                     setEthScanLink(
                                                         null
                                                     )
-                                                    setDisableSend(
+                                                    setIsWaitingOnTransaction(
                                                         false
                                                     )
                                                     if (
@@ -277,7 +291,7 @@ export default function Transfer() {
                                         (
                                             err
                                         ) => {
-                                            setDisableSend(
+                                            setIsWaitingOnTransaction(
                                                 false
                                             )
                                             console.log(
@@ -292,17 +306,7 @@ export default function Transfer() {
                         }
                         variant="contained"
                         color="primary"
-                        disabled={
-                            disableSend ||
-                            transferForm
-                                .error
-                                .amount !==
-                                undefined ||
-                            transferForm
-                                .error
-                                .recipient !==
-                                undefined
-                        }
+                        disabled={isSendDisabled()}
                     >
                         Send
                     </Button>
