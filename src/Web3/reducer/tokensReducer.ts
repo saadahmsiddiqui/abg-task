@@ -17,6 +17,7 @@ export type TokenInfo = {
     imageUri?: string;
     spenderAllowance?: number;
     isNativeToken?: boolean;
+    indexPrice: number;
 
     approve?: (
         spender: string,
@@ -57,6 +58,13 @@ export function tokensReducer(
                   spenderAllowance: number;
               };
           }
+        | {
+            type: "updateIndexPrice",
+            payload: {
+                id: string,
+                indexPrice: number
+            }
+        }
 ) {
     switch (action.type) {
         case "addToken":
@@ -72,6 +80,14 @@ export function tokensReducer(
                     balance: action.payload.balance,
                     balanceBN: action.payload.balanceBN,
                     spenderAllowance: action.payload.spenderAllowance,
+                },
+            };
+        case "updateIndexPrice":
+            return {
+                ...tokens,
+                [action.payload.id]: {
+                    ...tokens[action.payload.id],
+                    indexPrice: action.payload.indexPrice
                 },
             };
         case "resetTokens":

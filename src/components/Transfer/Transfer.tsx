@@ -147,7 +147,7 @@ export default function Transfer() {
                 Object.keys(tokens)
 
             let tkn = all.find(
-                (addr, index) => {
+                (addr) => {
                     if (
                         tokens[addr]
                             .name ===

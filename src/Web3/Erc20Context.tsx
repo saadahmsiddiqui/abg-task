@@ -7,6 +7,7 @@ import { Erc20Detailed } from "../interfaces/ERC20Detailed";
 import { useWeb3React } from "@web3-react/core";
 import { BigNumber, BigNumberish, ContractTransaction, ethers, Overrides, utils } from "ethers";
 import { Web3Provider } from "@ethersproject/providers";
+const CoinGecko = require('coingecko-api');
 
 declare global {
     interface Window {
@@ -16,8 +17,8 @@ declare global {
 
 type TokenConfig = {
     address: string;
-    name?: string;
-    symbol?: string;
+    name: string;
+    symbol: string;
     imageUri?: string;
 };
 
@@ -90,6 +91,7 @@ const ERC20ContextProvider = ({
         let tokenContracts: Array<Erc20Detailed> = [];
 
         if (connector && account && networkTokens.length > 0) {
+            const cGeckoClient = new CoinGecko();
             networkTokens.forEach(async (token) => {
                 const provider = await connector.getProvider();
                 if (token.symbol !== "ETH") {
@@ -109,7 +111,8 @@ const ERC20ContextProvider = ({
                         spenderAllowance: 0,
                         allowance: tokenContract.allowance,
                         approve: tokenContract.approve,
-                        transfer: tokenContract.transfer
+                        transfer: tokenContract.transfer,
+                        indexPrice: 0
                     };
 
                     if (!token.name) {
@@ -233,6 +236,7 @@ const ERC20ContextProvider = ({
                         approve: undefined,
                         transfer: transfer,
                         isNativeToken: true,
+                        indexPrice: 0,
                         updateNativeBalance
                     };
 
@@ -247,6 +251,31 @@ const ERC20ContextProvider = ({
                         }
                     }, 0)
                 }
+
+                cGeckoClient.simple.price({
+                    ids:[token.name],
+                    vs_currencies: ['usd']
+                }).then((res: any) => {
+                    const { data } = res;
+                    if (token.symbol === "ETH") {
+                        tokensDispatch({
+                            type: "updateIndexPrice",
+                            payload: {
+                                id: token.symbol,
+                                indexPrice: data[token.name.toLowerCase()].usd
+                            }
+                        })
+                    } else {
+
+                        tokensDispatch({
+                            type: "updateIndexPrice",
+                            payload: {
+                                id: token.address,
+                                indexPrice: data[token.name.toLowerCase()].usd
+                            }
+                        })
+                    }
+                })
             });
         }
         return () => {

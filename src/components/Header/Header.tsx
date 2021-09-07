@@ -47,6 +47,9 @@ export default function Header() {
           <Typography variant="h6" className={classes.title}>
             deFi App
           </Typography>
+          <Typography variant="h6" className={classes.title}>
+            Market Price: {selectedToken ? selectedToken.indexPrice : 0}
+          </Typography>
           { !account ? <Button variant="contained" onClick={() => activateWeb3()} color="inherit">Connect Wallet</Button> : 
             shortenAddr(account)
           }
