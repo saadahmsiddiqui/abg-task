@@ -3,7 +3,6 @@ import Web3Provider from "./Web3/Web3Provider"
 import Header from "./components/Header/Header"
 import { ERC20ContextProvider } from "./Web3/Erc20Context"
 import Transfer from "./components/Transfer/Transfer"
-import { StaticRouter as Router } from "react-router-dom"
 import tokens from "./tokens"
 // import {
 //     BrowserRouter as Router,
@@ -17,10 +16,10 @@ const App = () => {
             >
                 {/* <Router> */}
 
-                <Router>
+                {/* <Router> */}
                     <Header></Header>
                     <Transfer></Transfer>
-                </Router>
+                {/* </Router> */}
                 {/* </Router> */}
             </ERC20ContextProvider>
         </Web3Provider>
