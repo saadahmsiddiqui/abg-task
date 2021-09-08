@@ -9,14 +9,13 @@ import {
     useState,
 } from "react"
 import { useTokensContext } from "../../Web3/Erc20Context"
-import { Redirect } from "react-router-dom"
-import { useQuery } from "../../utils/useQuery"
 import { useWeb3React } from "@web3-react/core"
 import { ethers } from "ethers"
 import TextField from "@material-ui/core/TextField"
 
 import { useFormik } from "formik"
 import * as yup from "yup"
+import { useRouter } from 'next/router'
 
 const validationSchema = yup.object({
     amount: yup
@@ -58,7 +57,16 @@ const useStyles = makeStyles(
 )
 
 export default function Transfer() {
-    let token = useQuery().get("token")
+    const router = useRouter();
+    
+    const [token, setToken] = useState("");
+    useEffect(() => {
+        if (!router.query.token) {
+            setToken('ETH')
+        } else {
+            setToken(router.query.token as string)
+        }
+    })
 
     const classes = useStyles()
     const { active } = useWeb3React()
@@ -148,6 +156,7 @@ export default function Transfer() {
 
             let tkn = all.find(
                 (addr) => {
+                    console.log(token)
                     if (
                         tokens[addr]
                             .name ===
@@ -168,9 +177,9 @@ export default function Transfer() {
                 )
             }
         }
-    }, [active, tokens])
+    }, [active, tokens, token])
 
-    return token ? (
+    return (
         <div className={classes.root}>
             <form
                 onSubmit={
@@ -302,7 +311,5 @@ export default function Transfer() {
                 </div>
             </form>
         </div>
-    ) : (
-        <Redirect to="/?token=ETH" />
     )
 }
