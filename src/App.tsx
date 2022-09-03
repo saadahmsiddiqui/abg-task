@@ -14,13 +14,8 @@ const App = () => {
             <ERC20ContextProvider
                 tokensToWatch={tokens}
             >
-                {/* <Router> */}
-
-                {/* <Router> */}
-                    <Header></Header>
-                    <Transfer></Transfer>
-                {/* </Router> */}
-                {/* </Router> */}
+                    <Header />
+                    <Transfer />
             </ERC20ContextProvider>
         </Web3Provider>
     )
